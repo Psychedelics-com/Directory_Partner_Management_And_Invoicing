@@ -196,11 +196,15 @@ function renderPartnerTable(partners) {
                 <tr>
                     <th>Partner Name</th>
                     <th>Email</th>
-                    <th>Verification Status</th>
-                    <th>Upcoming</th>
-                    <th>Needs Verification</th>
-                    <th>Outstanding</th>
-                    <th>Overdue</th>
+                    <th title="Shows whether the partner has submitted their monthly verification form:
+
+Sent= Form sent, waiting for response.
+Submitted = Partner submitted the form.
+Overdue = Partner hasn't responded.">Verification Status ℹ️</th>
+                    <th title="Number of future retreats scheduled with this partner">Upcoming ℹ️</th>
+                    <th title="Number of past retreats that need to be verified by the partner">Needs Verification ℹ️</th>
+                    <th title="Total dollar amount of unpaid invoices for this partner">Outstanding ℹ️</th>
+                    <th title="Amount of invoices that are past due (more than 72 hours old)">Overdue ℹ️</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -226,6 +230,7 @@ function renderPartnerTable(partners) {
                         </td>
                         <td>
                             <div class="action-buttons">
+                                <button class="btn btn-small" onclick="editPartner(${p.id})">Edit</button>
                                 <button class="btn btn-small" onclick="viewPartnerDetails(${p.id})">View</button>
                                 <button class="btn btn-small btn-secondary" onclick="showPartnerNotes(${p.id})">Notes</button>
                             </div>
@@ -791,6 +796,85 @@ function toggleCommissionFields() {
     } else {
         rateGroup.style.display = 'none';
         flatGroup.style.display = 'block';
+    }
+}
+
+function toggleEditCommissionFields() {
+    const type = document.getElementById('edit-partner-commission-type').value;
+    const rateGroup = document.getElementById('edit-commission-rate-group');
+    const flatGroup = document.getElementById('edit-flat-rate-group');
+
+    if (type === 'percentage') {
+        rateGroup.style.display = 'block';
+        flatGroup.style.display = 'none';
+    } else {
+        rateGroup.style.display = 'none';
+        flatGroup.style.display = 'block';
+    }
+}
+
+async function editPartner(partnerId) {
+    showModal('edit-partner-modal');
+
+    try {
+        // Fetch partner details
+        const response = await fetch(`/api/admin/partners`);
+        const data = await response.json();
+        const partner = data.partners.find(p => p.id === partnerId);
+
+        if (!partner) {
+            alert('Partner not found');
+            return;
+        }
+
+        // Populate form
+        document.getElementById('edit-partner-id').value = partner.id;
+        document.getElementById('edit-partner-name').value = partner.name;
+        document.getElementById('edit-partner-email').value = partner.email;
+        document.getElementById('edit-partner-contact').value = partner.contact_info || '';
+        document.getElementById('edit-partner-commission-type').value = partner.commission_type || 'percentage';
+        document.getElementById('edit-partner-commission').value = partner.commission_rate || 15;
+        document.getElementById('edit-partner-flat-rate').value = partner.flat_rate_amount || '';
+
+        // Toggle commission fields based on type
+        toggleEditCommissionFields();
+    } catch (error) {
+        console.error('Error loading partner:', error);
+        alert('Failed to load partner details');
+    }
+}
+
+async function updatePartner(event) {
+    event.preventDefault();
+
+    const partnerId = document.getElementById('edit-partner-id').value;
+    const data = {
+        name: document.getElementById('edit-partner-name').value,
+        email: document.getElementById('edit-partner-email').value,
+        contact_info: document.getElementById('edit-partner-contact').value,
+        commission_type: document.getElementById('edit-partner-commission-type').value,
+        commission_rate: parseFloat(document.getElementById('edit-partner-commission').value),
+        flat_rate_amount: parseFloat(document.getElementById('edit-partner-flat-rate').value) || null
+    };
+
+    try {
+        const response = await fetch(`/api/admin/partners/${partnerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert('Partner updated successfully!');
+            closeModal('edit-partner-modal');
+            loadPartnerStatus();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        console.error('Error updating partner:', error);
+        alert('Failed to update partner');
     }
 }
 

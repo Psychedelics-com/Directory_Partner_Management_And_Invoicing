@@ -18,6 +18,12 @@
             color: #2c3e50;
         }
 
+        /* Fast tooltip appearance */
+        th[title] {
+            cursor: help;
+        }
+
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -691,6 +697,47 @@
             <div id="invoice-details-content">
                 <div class="loading">Loading details...</div>
             </div>
+        </div>
+    </div>
+
+    <div id="edit-partner-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Partner</h2>
+                <button class="close-btn" onclick="closeModal('edit-partner-modal')">×</button>
+            </div>
+            <form onsubmit="updatePartner(event)">
+                <input type="hidden" id="edit-partner-id">
+                <div class="form-group">
+                    <label class="form-label">Partner Name *</label>
+                    <input type="text" class="form-input" id="edit-partner-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="edit-partner-email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contact Info</label>
+                    <textarea class="form-textarea" id="edit-partner-contact"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Commission Type</label>
+                    <select class="form-input" id="edit-partner-commission-type"
+                        onchange="toggleEditCommissionFields()">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="flat_rate">Flat Rate per Booking ($)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="edit-commission-rate-group">
+                    <label class="form-label">Commission Rate (%)</label>
+                    <input type="number" class="form-input" id="edit-partner-commission" step="0.1">
+                </div>
+                <div class="form-group" id="edit-flat-rate-group" style="display: none;">
+                    <label class="form-label">Flat Rate Amount ($)</label>
+                    <input type="number" class="form-input" id="edit-partner-flat-rate" step="0.01">
+                </div>
+                <button type="submit" class="btn">Update Partner</button>
+            </form>
         </div>
     </div>
 
