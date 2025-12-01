@@ -811,7 +811,10 @@ function viewPartnerDetails(partnerId) {
             </div>
 
             <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: #2c3e50;">Bookings (${bookings.length})</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #2c3e50;">Bookings (${bookings.length})</h3>
+                    <button class="btn btn-small" onclick="showAddBookingModal(${partnerId})" style="background: #27ae60; color: white;">+ Add Booking</button>
+                </div>
                 ${bookings.length > 0 ? `
                     <table>
                         <thead>
@@ -820,6 +823,7 @@ function viewPartnerDetails(partnerId) {
                                 <th>Retreat Date</th>
                                 <th>Status</th>
                                 <th>Revenue</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -829,6 +833,10 @@ function viewPartnerDetails(partnerId) {
                                     <td>${formatDate(b.retreat_date)}</td>
                                     <td><span class="badge badge-${getStatusBadge(b.status)}">${b.status}</span></td>
                                     <td>$${formatCurrency(b.final_net_revenue || b.expected_net_revenue || 0)}</td>
+                                    <td>
+                                        <button class="btn btn-small" onclick="editBooking(${b.id}, ${partnerId})">Edit</button>
+                                        <button class="btn btn-small" style="background: #e74c3c; color: white;" onclick="deleteBooking(${b.id}, ${partnerId})">Delete</button>
+                                    </td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1036,5 +1044,104 @@ async function viewInvoiceDetails(invoiceId) {
     } catch (error) {
         console.error('Error viewing invoice details:', error);
         container.innerHTML = '<div class="error">Failed to load details</div>';
+    }
+}
+
+// Booking Management Functions
+function showAddBookingModal(partnerId) {
+    document.getElementById('booking-modal-title').textContent = 'Add Booking';
+    document.getElementById('booking-id').value = '';
+    document.getElementById('booking-partner-id').value = partnerId;
+    document.getElementById('booking-guest-name').value = '';
+    document.getElementById('booking-retreat-date').value = '';
+    document.getElementById('booking-status').value = 'scheduled';
+    document.getElementById('booking-expected-revenue').value = '';
+    document.getElementById('booking-final-revenue').value = '';
+    showModal('booking-modal');
+}
+
+async function editBooking(bookingId, partnerId) {
+    try {
+        const response = await fetch(`/api/admin/bookings?partner_id=${partnerId}`);
+        const data = await response.json();
+        const booking = data.bookings.find(b => b.id === bookingId);
+
+        if (!booking) {
+            alert('Booking not found');
+            return;
+        }
+
+        document.getElementById('booking-modal-title').textContent = 'Edit Booking';
+        document.getElementById('booking-id').value = booking.id;
+        document.getElementById('booking-partner-id').value = partnerId;
+        document.getElementById('booking-guest-name').value = booking.guest_name;
+        document.getElementById('booking-retreat-date').value = booking.retreat_date.split('T')[0];
+        document.getElementById('booking-status').value = booking.status;
+        document.getElementById('booking-expected-revenue').value = booking.expected_net_revenue || '';
+        document.getElementById('booking-final-revenue').value = booking.final_net_revenue || '';
+        showModal('booking-modal');
+    } catch (error) {
+        console.error('Error loading booking:', error);
+        alert('Failed to load booking details');
+    }
+}
+
+async function deleteBooking(bookingId, partnerId) {
+    if (!confirm('Are you sure you want to delete this booking?')) return;
+
+    try {
+        const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            alert('Booking deleted successfully!');
+            closeModal('booking-modal');
+            viewPartnerDetails(partnerId);
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        alert('Failed to delete booking');
+    }
+}
+
+async function saveBooking(event) {
+    event.preventDefault();
+
+    const bookingId = document.getElementById('booking-id').value;
+    const partnerId = document.getElementById('booking-partner-id').value;
+    const data = {
+        partner_id: parseInt(partnerId),
+        guest_name: document.getElementById('booking-guest-name').value,
+        retreat_date: document.getElementById('booking-retreat-date').value,
+        status: document.getElementById('booking-status').value,
+        expected_net_revenue: parseFloat(document.getElementById('booking-expected-revenue').value) || null,
+        final_net_revenue: parseFloat(document.getElementById('booking-final-revenue').value) || null
+    };
+
+    try {
+        const url = bookingId ? `/api/admin/bookings/${bookingId}` : '/api/admin/bookings';
+        const method = bookingId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert(bookingId ? 'Booking updated successfully!' : 'Booking created successfully!');
+            closeModal('booking-modal');
+            viewPartnerDetails(partnerId);
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        console.error('Error saving booking:', error);
+        alert('Failed to save booking');
     }
 }

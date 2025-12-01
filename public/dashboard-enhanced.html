@@ -753,6 +753,45 @@
         </div>
     </div>
 
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="booking-modal-title">Add Booking</h2>
+                <button class="close-btn" onclick="closeModal('booking-modal')">×</button>
+            </div>
+            <form onsubmit="saveBooking(event)">
+                <input type="hidden" id="booking-id">
+                <input type="hidden" id="booking-partner-id">
+                <div class="form-group">
+                    <label class="form-label">Guest Name *</label>
+                    <input type="text" class="form-input" id="booking-guest-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Retreat Date *</label>
+                    <input type="date" class="form-input" id="booking-retreat-date" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status *</label>
+                    <select class="form-input" id="booking-status" required>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="completed">Completed</option>
+                        <option value="canceled">Canceled</option>
+                        <option value="rescheduled">Rescheduled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expected Revenue ($)</label>
+                    <input type="number" class="form-input" id="booking-expected-revenue" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Final Revenue ($)</label>
+                    <input type="number" class="form-input" id="booking-final-revenue" step="0.01">
+                </div>
+                <button type="submit" class="btn">Save Booking</button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/enhanced-dashboard.js"></script>
 </body>
