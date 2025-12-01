@@ -224,4 +224,65 @@ router.get('/traffic/:month', ensureAuthenticated, async (req, res) => {
     }
 });
 
+/**
+ * GET /admin/bookings
+ * Get all bookings, optionally filtered by partner_id
+ */
+router.get('/bookings', ensureAuthenticated, async (req, res) => {
+    try {
+        const { partner_id } = req.query;
+
+        let queryText = 'SELECT * FROM retreat_bookings';
+        let params = [];
+
+        if (partner_id) {
+            queryText += ' WHERE partner_id = $1';
+            params.push(partner_id);
+        }
+
+        queryText += ' ORDER BY retreat_date DESC';
+
+        const result = await query(queryText, params);
+        res.json({ bookings: result.rows });
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({ error: 'Failed to fetch bookings' });
+    }
+});
+
+/**
+ * GET /admin/invoices
+ * Get all invoices, optionally filtered by partner_id
+ */
+router.get('/invoices', ensureAuthenticated, async (req, res) => {
+    try {
+        const { partner_id } = req.query;
+
+        let queryText = `
+            SELECT 
+                i.*,
+                CASE 
+                    WHEN i.status IN ('pending', 'sent') AND i.due_date < CURRENT_DATE THEN 
+                        CURRENT_DATE - i.due_date
+                    ELSE 0
+                END as days_overdue
+            FROM invoices i
+        `;
+        let params = [];
+
+        if (partner_id) {
+            queryText += ' WHERE i.partner_id = $1';
+            params.push(partner_id);
+        }
+
+        queryText += ' ORDER BY i.created_at DESC';
+
+        const result = await query(queryText, params);
+        res.json({ invoices: result.rows });
+    } catch (error) {
+        console.error('Error fetching invoices:', error);
+        res.status(500).json({ error: 'Failed to fetch invoices' });
+    }
+});
+
 module.exports = router;
