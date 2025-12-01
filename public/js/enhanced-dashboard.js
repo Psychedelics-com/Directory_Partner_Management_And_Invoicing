@@ -230,7 +230,6 @@ Overdue = Partner hasn't responded.">Verification Status ℹ️</th>
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn btn-small" onclick="editPartner(${p.id})">Edit</button>
                                 <button class="btn btn-small" onclick="viewPartnerDetails(${p.id})">View</button>
                                 <button class="btn btn-small btn-secondary" onclick="showPartnerNotes(${p.id})">Notes</button>
                             </div>
@@ -799,7 +798,10 @@ function viewPartnerDetails(partnerId) {
 
             container.innerHTML = `
             <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 15px; color: #2c3e50;">Partner Information</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #2c3e50;">Partner Information</h3>
+                    <button class="btn btn-small" onclick="editPartnerFromDetails(${partnerId})" style="background: #667eea; color: white;">Edit Partner</button>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
                     <div><strong>Name:</strong> ${partner.name}</div>
                     <div><strong>Email:</strong> ${partner.email}</div>
@@ -887,6 +889,53 @@ function getStatusBadge(status) {
         'rescheduled': 'warning'
     };
     return badges[status] || 'secondary';
+}
+
+async function editPartnerFromDetails(partnerId) {
+    // Close the partner details modal first
+    closeModal('partner-details-modal');
+
+    // Open the edit modal with partner data
+    await editPartner(partnerId);
+}
+
+// Override the updatePartner function to handle both cases
+const originalUpdatePartner = updatePartner;
+async function updatePartner(event) {
+    event.preventDefault();
+
+    const partnerId = document.getElementById('edit-partner-id').value;
+    const data = {
+        name: document.getElementById('edit-partner-name').value,
+        email: document.getElementById('edit-partner-email').value,
+        contact_info: document.getElementById('edit-partner-contact').value,
+        commission_type: document.getElementById('edit-partner-commission-type').value,
+        commission_rate: parseFloat(document.getElementById('edit-partner-commission').value),
+        flat_rate_amount: parseFloat(document.getElementById('edit-partner-flat-rate').value) || null
+    };
+
+    try {
+        const response = await fetch(`/api/admin/partners/${partnerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert('Partner updated successfully!');
+            closeModal('edit-partner-modal');
+
+            // Refresh both the partner list and reopen partner details
+            await loadPartnerStatus();
+            viewPartnerDetails(partnerId);
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        console.error('Error updating partner:', error);
+        alert('Failed to update partner');
+    }
 }
 
 function editTemplate(templateKey) {
