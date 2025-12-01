@@ -777,8 +777,108 @@ function formatDate(dateString) {
 }
 
 function viewPartnerDetails(partnerId) {
-    // Navigate to partner detail view (could be implemented as a modal or separate page)
-    alert(`Partner details view for ID: ${partnerId} (to be implemented)`);
+    showModal('partner-details-modal');
+    const container = document.getElementById('partner-details-content');
+    container.innerHTML = '<div class="loading">Loading partner details...</div>';
+
+    Promise.all([
+        fetch(`/api/admin/partners`).then(r => r.json()),
+        fetch(`/api/admin/bookings?partner_id=${partnerId}`).then(r => r.json()),
+        fetch(`/api/admin/invoices?partner_id=${partnerId}`).then(r => r.json())
+    ])
+        .then(([partnersData, bookingsData, invoicesData]) => {
+            const partner = partnersData.partners.find(p => p.id === partnerId);
+
+            if (!partner) {
+                container.innerHTML = '<div class="error">Partner not found</div>';
+                return;
+            }
+
+            const bookings = bookingsData.bookings || [];
+            const invoices = invoicesData.invoices || [];
+
+            container.innerHTML = `
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Partner Information</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                    <div><strong>Name:</strong> ${partner.name}</div>
+                    <div><strong>Email:</strong> ${partner.email}</div>
+                    <div><strong>Commission Rate:</strong> ${partner.commission_rate || 15}%</div>
+                    <div><strong>Commission Type:</strong> ${partner.commission_type || 'percentage'}</div>
+                    ${partner.flat_rate_amount ? `<div><strong>Flat Rate:</strong> $${partner.flat_rate_amount}</div>` : ''}
+                    <div><strong>Contact Info:</strong> ${partner.contact_info || 'N/A'}</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Bookings (${bookings.length})</h3>
+                ${bookings.length > 0 ? `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Guest Name</th>
+                                <th>Retreat Date</th>
+                                <th>Status</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${bookings.map(b => `
+                                <tr>
+                                    <td>${b.guest_name}</td>
+                                    <td>${formatDate(b.retreat_date)}</td>
+                                    <td><span class="badge badge-${getStatusBadge(b.status)}">${b.status}</span></td>
+                                    <td>$${formatCurrency(b.final_net_revenue || b.expected_net_revenue || 0)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<p style="color: #7f8c8d;">No bookings found</p>'}
+            </div>
+
+            <div>
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Invoices (${invoices.length})</h3>
+                ${invoices.length > 0 ? `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${invoices.map(i => `
+                                <tr>
+                                    <td>#${i.id}</td>
+                                    <td>${formatDate(i.created_at)}</td>
+                                    <td>${formatDate(i.due_date)}</td>
+                                    <td>$${formatCurrency(i.amount)}</td>
+                                    <td><span class="badge badge-${getInvoiceStatusBadge(i.status, i.days_overdue)}">${i.status}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<p style="color: #7f8c8d;">No invoices found</p>'}
+            </div>
+        `;
+        })
+        .catch(error => {
+            console.error('Error loading partner details:', error);
+            container.innerHTML = '<div class="error">Failed to load partner details</div>';
+        });
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'scheduled': 'info',
+        'completed': 'success',
+        'canceled': 'danger',
+        'rescheduled': 'warning'
+    };
+    return badges[status] || 'secondary';
 }
 
 function editTemplate(templateKey) {
