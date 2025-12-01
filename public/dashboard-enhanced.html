@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Partner Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            opacity: 0.9;
+            font-size: 13px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #7f8c8d;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .filter-select {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #2c3e50;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-warning {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-secondary {
+            background: #f5f5f5;
+            color: #757575;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .notification-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .notification-panel.open {
+            right: 0;
+        }
+
+        .notification-header {
+            padding: 20px;
+            background: #667eea;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #ecf0f1;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background: #e3f2fd;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #95a5a6;
+        }
+
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .notification-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <h1>Partner Automation Dashboard</h1>
+            <p>Enhanced management and tracking system</p>
+        </div>
+        <div class="header-right">
+            <div class="notification-bell" onclick="toggleNotifications()">
+                🔔
+                <span class="notification-badge" id="notification-count">0</span>
+            </div>
+            <div class="user-menu">
+                <button class="logout-btn" onclick="window.location.href='/auth/logout'">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notification-panel">
+        <div class="notification-header">
+            <h3>Notifications</h3>
+            <button class="close-btn" onclick="toggleNotifications()">×</button>
+        </div>
+        <div id="notification-list">
+            <div class="loading">Loading notifications...</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab" onclick="switchTab('partners')">Partner Status</button>
+            <button class="tab" onclick="switchTab('invoices')">Invoices</button>
+            <button class="tab" onclick="switchTab('financial')">Financial</button>
+            <button class="tab" onclick="switchTab('settings')">Settings</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <div class="stats-grid" id="overview-stats">
+                <div class="loading">Loading statistics...</div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Quick Actions</h2>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn" onclick="triggerReports()">Generate Monthly Reports</button>
+                    <button class="btn" onclick="triggerInvoicing()">Process Invoicing</button>
+                    <button class="btn btn-secondary" onclick="showUploadCSV()">Upload Traffic CSV</button>
+                    <button class="btn btn-success" onclick="showAddPartner()">Add Partner</button>
+                    <button class="btn btn-secondary" onclick="exportData()">Export Data</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Activity</h2>
+                </div>
+                <div id="recent-activity">
+                    <div class="loading">Loading activity...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partner Status Tab -->
+        <div id="partners-tab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Partner Status Overview</h2>
+                    <button class="btn btn-success" onclick="showAddPartner()">Add Partner</button>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="partner-search" placeholder="Search partners..."
+                        onkeyup="filterPartners()">
+                    <select class="filter-select" id="partner-filter" onchange="filterPartners()">
+                        <option value="all">All Partners</option>
+                        <option value="verification_overdue">Verification Overdue</option>
+                        <option value="payment_overdue">Payment Overdue</option>
+                        <option value="all_paid_up">All Paid Up</option>
+                        <option value="needs_verification">Needs Verification</option>
+                    </select>
+                    <button class="btn" onclick="loadPartnerStatus()">Refresh</button>
+                </div>
+
+                <div id="partner-status-table">
+                    <div class="loading">Loading partners...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoices Tab -->
+        <div id="invoices-tab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Invoice Management</h2>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="invoice-search" placeholder="Search invoices..."
+                        onkeyup="filterInvoices()">
+                    <select class="filter-select" id="invoice-filter" onchange="filterInvoices()">
+                        <option value="all">All Invoices</option>
+                        <option value="pending">Pending</option>
+                        <option value="sent">Sent</option>
+                        <option value="paid">Paid</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                    <button class="btn" onclick="loadInvoices()">Refresh</button>
+                </div>
+
+                <div id="invoice-table">
+                    <div class="loading">Loading invoices...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Tab -->
+        <div id="financial-tab" class="tab-content">
+            <div class="stats-grid" id="financial-stats">
+                <div class="loading">Loading financial data...</div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Revenue Trend (Last 12 Months)</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenue-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Top Partners by Revenue</h2>
+                </div>
+                <div id="top-partners-table">
+                    <div class="loading">Loading data...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Email Templates</h2>
+                </div>
+                <div id="email-templates">
+                    <div class="loading">Loading templates...</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Email Activity Log</h2>
+                </div>
+                <div id="email-activity">
+                    <div class="loading">Loading activity...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="add-partner-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Partner</h2>
+                <button class="close-btn" onclick="closeModal('add-partner-modal')">×</button>
+            </div>
+            <form onsubmit="addPartner(event)">
+                <div class="form-group">
+                    <label class="form-label">Partner Name *</label>
+                    <input type="text" class="form-input" id="partner-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="partner-email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contact Info</label>
+                    <textarea class="form-textarea" id="partner-contact"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Commission Type</label>
+                    <select class="form-input" id="partner-commission-type" onchange="toggleCommissionFields()">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="flat_rate">Flat Rate per Booking ($)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="commission-rate-group">
+                    <label class="form-label">Commission Rate (%)</label>
+                    <input type="number" class="form-input" id="partner-commission" value="15" step="0.1">
+                </div>
+                <div class="form-group" id="flat-rate-group" style="display: none;">
+                    <label class="form-label">Flat Rate Amount ($)</label>
+                    <input type="number" class="form-input" id="partner-flat-rate" step="0.01">
+                </div>
+                <button type="submit" class="btn">Add Partner</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="upload-csv-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload Traffic CSV</h2>
+                <button class="close-btn" onclick="closeModal('upload-csv-modal')">×</button>
+            </div>
+            <form onsubmit="uploadCSV(event)">
+                <div class="form-group">
+                    <label class="form-label">Report Month *</label>
+                    <input type="month" class="form-input" id="csv-month" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CSV File *</label>
+                    <input type="file" class="form-input" id="csv-file" accept=".csv" required>
+                </div>
+                <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 20px;">
+                    CSV must include columns: partner_email, traffic_delivered, warm_leads_sent
+                </p>
+                <button type="submit" class="btn">Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="partner-notes-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Partner Notes</h2>
+                <button class="close-btn" onclick="closeModal('partner-notes-modal')">×</button>
+            </div>
+            <div id="notes-list">
+                <div class="loading">Loading notes...</div>
+            </div>
+            <form onsubmit="addNote(event)" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Add Note</label>
+                    <textarea class="form-textarea" id="note-text" required></textarea>
+                </div>
+                <button type="submit" class="btn">Add Note</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="invoice-details-modal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Invoice Details</h2>
+                <button class="close-btn" onclick="closeModal('invoice-details-modal')">×</button>
+            </div>
+            <div id="invoice-details-content">
+                <div class="loading">Loading details...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/enhanced-dashboard.js"></script>
+</body>
+
+</html>

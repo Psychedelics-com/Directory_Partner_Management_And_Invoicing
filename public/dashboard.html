@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Automation Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .stat-subtext {
+            font-size: 13px;
+            color: #95a5a6;
+            margin-top: 4px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-scheduled {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-verification {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-paid {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge-pending {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-sent {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Partner Automation Dashboard</h1>
+        <p>Retreat booking management and invoicing system</p>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Overview -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="loading">Loading statistics...</div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Admin Actions</h2>
+            </div>
+            <div class="actions">
+                <button class="btn" onclick="triggerReports()">Generate Monthly Reports</button>
+                <button class="btn" onclick="triggerInvoicing()">Process Invoicing</button>
+                <button class="btn btn-secondary" onclick="refreshData()">Refresh Data</button>
+            </div>
+        </div>
+
+        <!-- Upcoming Retreats -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Upcoming Retreats (Next 30 Days)</h2>
+            </div>
+            <div id="upcoming-retreats">
+                <div class="loading">Loading retreats...</div>
+            </div>
+        </div>
+
+        <!-- Retreats Needing Verification -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Retreats Needing Verification</h2>
+            </div>
+            <div id="verification-needed">
+                <div class="loading">Loading data...</div>
+            </div>
+        </div>
+
+        <!-- Partner Performance -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Partner Performance</h2>
+            </div>
+            <div id="partner-metrics">
+                <div class="loading">Loading partners...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load statistics
+                const statsResponse = await fetch('/api/dashboard/stats');
+                const stats = await statsResponse.json();
+                renderStats(stats);
+
+                // Load upcoming retreats
+                const upcomingResponse = await fetch('/api/retreats/upcoming?days=30');
+                const upcomingData = await upcomingResponse.json();
+                renderUpcomingRetreats(upcomingData.retreats);
+
+                // Load verification needed
+                const verificationResponse = await fetch('/api/retreats/verification-needed');
+                const verificationData = await verificationResponse.json();
+                renderVerificationNeeded(verificationData.retreats);
+
+                // Partner metrics are included in stats
+                renderPartnerMetrics(stats.partners);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Render statistics
+        function renderStats(stats) {
+            const grid = document.getElementById('stats-grid');
+            grid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Upcoming Retreats</div>
+          <div class="stat-value">${stats.tracking.upcoming_count || 0}</div>
+          <div class="stat-subtext">$${formatCurrency(stats.tracking.upcoming_revenue || 0)} expected</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Needs Verification</div>
+          <div class="stat-value">${stats.tracking.needs_verification_count || 0}</div>
+          <div class="stat-subtext">Past retreat dates</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed Retreats</div>
+          <div class="stat-value">${stats.tracking.completed_count || 0}</div>
+          <div class="stat-subtext">$${formatCurrency(stats.tracking.completed_revenue || 0)} revenue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Outstanding Invoices</div>
+          <div class="stat-value">${(stats.invoices.pending_count || 0) + (stats.invoices.sent_count || 0)}</div>
+          <div class="stat-subtext">$${formatCurrency(stats.invoices.outstanding_revenue || 0)} due</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Paid Invoices</div>
+          <div class="stat-value">${stats.invoices.paid_count || 0}</div>
+          <div class="stat-subtext">$${formatCurrency(stats.invoices.total_revenue || 0)} received</div>
+        </div>
+      `;
+        }
+
+        // Render upcoming retreats
+        function renderUpcomingRetreats(retreats) {
+            const container = document.getElementById('upcoming-retreats');
+
+            if (retreats.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><p>No upcoming retreats in the next 30 days</p></div>';
+                return;
+            }
+
+            container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Partner</th>
+              <th>Guest Name</th>
+              <th>Retreat Date</th>
+              <th>Expected Revenue</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${retreats.map(r => `
+              <tr>
+                <td>${r.partner_name}</td>
+                <td>${r.guest_name}</td>
+                <td>${formatDate(r.retreat_date)}</td>
+                <td>$${parseFloat(r.expected_net_revenue).toFixed(2)}</td>
+                <td><span class="badge badge-scheduled">Scheduled</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+        }
+
+        // Render verification needed
+        function renderVerificationNeeded(retreats) {
+            const container = document.getElementById('verification-needed');
+
+            if (retreats.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✅</div><p>All past retreats have been verified</p></div>';
+                return;
+            }
+
+            container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Partner</th>
+              <th>Guest Name</th>
+              <th>Retreat Date</th>
+              <th>Expected Revenue</th>
+              <th>Days Overdue</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${retreats.map(r => `
+              <tr>
+                <td>${r.partner_name}</td>
+                <td>${r.guest_name}</td>
+                <td>${formatDate(r.retreat_date)}</td>
+                <td>$${parseFloat(r.expected_net_revenue).toFixed(2)}</td>
+                <td><span class="badge badge-verification">${getDaysOverdue(r.retreat_date)} days</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+        }
+
+        // Render partner metrics
+        function renderPartnerMetrics(partners) {
+            const container = document.getElementById('partner-metrics');
+
+            if (!partners || partners.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><p>No partner data available</p></div>';
+                return;
+            }
+
+            container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Partner Name</th>
+              <th>Upcoming</th>
+              <th>Completed</th>
+              <th>Total Revenue</th>
+              <th>Commission Paid</th>
+              <th>Outstanding</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${partners.map(p => `
+              <tr>
+                <td>${p.name}</td>
+                <td>${p.upcoming_bookings || 0}</td>
+                <td>${p.completed_bookings || 0}</td>
+                <td>$${formatCurrency(p.total_revenue || 0)}</td>
+                <td>$${formatCurrency(p.total_commission_paid || 0)}</td>
+                <td>$${formatCurrency(p.outstanding_commission || 0)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+        }
+
+        // Trigger monthly reports
+        async function triggerReports() {
+            if (!confirm('Generate monthly reports for all partners?')) return;
+
+            try {
+                const response = await fetch('/api/admin/trigger-reports', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+                const result = await response.json();
+                alert(`Reports generated: ${result.results.successCount} sent, ${result.results.failureCount} failed`);
+                refreshData();
+            } catch (error) {
+                alert('Failed to generate reports');
+                console.error(error);
+            }
+        }
+
+        // Trigger invoicing
+        async function triggerInvoicing() {
+            if (!confirm('Process invoicing for completed retreats?')) return;
+
+            try {
+                const response = await fetch('/api/admin/trigger-invoicing', { method: 'POST' });
+                const result = await response.json();
+                alert(`Invoicing complete: ${result.results.successCount} invoices created`);
+                refreshData();
+            } catch (error) {
+                alert('Failed to process invoicing');
+                console.error(error);
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadDashboard();
+        }
+
+        // Format currency
+        function formatCurrency(value) {
+            return parseFloat(value || 0).toFixed(2);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // Get days overdue
+        function getDaysOverdue(retreatDate) {
+            const date = new Date(retreatDate);
+            const today = new Date();
+            const diff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+            return diff;
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+    </script>
+</body>
+
+</html>
