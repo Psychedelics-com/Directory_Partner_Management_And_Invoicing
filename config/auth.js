@@ -14,10 +14,11 @@ function configurePassport() {
                 callbackURL: config.googleOAuth.callbackURL,
             },
             (accessToken, refreshToken, profile, done) => {
-                // Verify user is admin
-                const userEmail = profile.emails[0].value;
+                // Verify user is admin (case-insensitive email comparison)
+                const userEmail = profile.emails[0].value.toLowerCase();
+                const adminEmail = config.googleOAuth.adminEmail.toLowerCase();
 
-                if (userEmail === config.googleOAuth.adminEmail) {
+                if (userEmail === adminEmail) {
                     return done(null, profile);
                 } else {
                     return done(null, false, { message: 'Unauthorized email address' });
