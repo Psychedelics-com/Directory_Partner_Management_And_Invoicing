@@ -203,6 +203,7 @@ Submitted = Partner submitted the form.
 Overdue = Partner hasn't responded.">Verification Status ℹ️</th>
                     <th title="Number of future retreats scheduled with this partner">Upcoming ℹ️</th>
                     <th title="Number of past retreats that need to be verified by the partner">Needs Verification ℹ️</th>
+                    <th title="Number of completed retreats">Completed ℹ️</th>
                     <th title="Total dollar amount of unpaid invoices for this partner">Outstanding ℹ️</th>
                     <th title="Amount of invoices that are past due (more than 72 hours old)">Overdue ℹ️</th>
                     <th>Actions</th>
@@ -222,6 +223,7 @@ Overdue = Partner hasn't responded.">Verification Status ℹ️</th>
                         </td>
                         <td>${p.upcoming_bookings || 0}</td>
                         <td>${p.needs_verification || 0}</td>
+                        <td>${p.completed_bookings || 0}</td>
                         <td>$${formatCurrency(p.total_owed || 0)}</td>
                         <td>
                             ${p.overdue_invoices > 0
