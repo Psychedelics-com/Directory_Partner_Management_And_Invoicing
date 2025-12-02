@@ -173,6 +173,8 @@ router.get('/partners/status-overview', ensureAuthenticated, async (req, res) =>
         p.name,
         p.email,
         p.commission_rate,
+        p.commission_type,
+        p.flat_rate_amount,
         
         -- Verification status
         vf.status as verification_status,
@@ -188,11 +190,18 @@ router.get('/partners/status-overview', ensureAuthenticated, async (req, res) =>
         COUNT(DISTINCT rb.id) FILTER (WHERE rb.status = 'scheduled' AND rb.retreat_date <= CURRENT_DATE) as needs_verification,
         COUNT(DISTINCT rb.id) FILTER (WHERE rb.status = 'completed') as completed_bookings,
         
-        -- Invoice status
+        -- Invoice status (for overdue tracking)
         COUNT(DISTINCT i.id) FILTER (WHERE i.status IN ('pending', 'sent')) as outstanding_invoices,
-        SUM(i.amount) FILTER (WHERE i.status IN ('pending', 'sent')) as total_owed,
         COUNT(DISTINCT i.id) FILTER (WHERE i.status IN ('pending', 'sent') AND i.due_date < CURRENT_DATE - INTERVAL '7 days') as overdue_invoices,
         SUM(i.amount) FILTER (WHERE i.status IN ('pending', 'sent') AND i.due_date < CURRENT_DATE - INTERVAL '7 days') as overdue_amount,
+        
+        -- Total commission owed based on completed bookings
+        CASE 
+          WHEN p.commission_type = 'flat_rate' THEN 
+            COUNT(DISTINCT rb.id) FILTER (WHERE rb.status = 'completed') * COALESCE(p.flat_rate_amount, 0)
+          ELSE 
+            SUM(rb.final_net_revenue) FILTER (WHERE rb.status = 'completed') * (COALESCE(p.commission_rate, 15) / 100.0)
+        END as total_owed,
         
         -- Revenue
         SUM(rb.final_net_revenue) FILTER (WHERE rb.status = 'completed') as total_revenue,
@@ -207,7 +216,7 @@ router.get('/partners/status-overview', ensureAuthenticated, async (req, res) =>
       LEFT JOIN retreat_bookings rb ON p.id = rb.partner_id
       LEFT JOIN invoices i ON p.id = i.partner_id
       
-      GROUP BY p.id, p.name, p.email, p.commission_rate, vf.status, vf.sent_date, vf.submitted_date
+      GROUP BY p.id, p.name, p.email, p.commission_rate, p.commission_type, p.flat_rate_amount, vf.status, vf.sent_date, vf.submitted_date
       ORDER BY p.name
     `);
 
